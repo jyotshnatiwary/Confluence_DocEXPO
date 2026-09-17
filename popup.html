@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Confluence Bulk Exporter</h1>
+
+    <div class="section">
+      <div class="label">Current page</div>
+      <div id="current-page" class="page-info">Detecting&hellip;</div>
+    </div>
+
+    <div class="section">
+      <label for="format" class="label">Format</label>
+      <select id="format">
+        <option value="doc">Word (.doc) &mdash; opens in MS Word</option>
+        <option value="html">HTML (.html)</option>
+      </select>
+    </div>
+
+    <div class="section">
+      <label class="checkbox">
+        <input type="checkbox" id="include-children" checked>
+        <span>Include all child pages (recursive)</span>
+      </label>
+    </div>
+
+    <div class="section">
+      <label for="max-depth" class="label">Max depth (0 = unlimited)</label>
+      <input type="number" id="max-depth" value="0" min="0" max="20">
+    </div>
+
+    <div class="section">
+      <label class="checkbox">
+        <input type="checkbox" id="embed-images">
+        <span>Embed images inline (larger files, works offline)</span>
+      </label>
+    </div>
+
+    <button id="export-btn" class="primary" disabled>Export as ZIP</button>
+
+    <div id="progress" class="progress" style="display:none">
+      <div class="progress-bar"><div id="progress-fill"></div></div>
+      <div id="progress-text">0%</div>
+    </div>
+
+    <div id="log" class="log"></div>
+  </div>
+
+  <script src="lib/jszip.min.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

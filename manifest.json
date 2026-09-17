@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Confluence Bulk Exporter",
+  "version": "1.0.0",
+  "description": "Export a Confluence page and all its child pages as a ZIP with folder structure preserved. One .doc or .html file per page.",
+  "permissions": ["activeTab", "downloads", "scripting"],
+  "host_permissions": [
+    "https://*.atlassian.net/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Confluence Bulk Exporter",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

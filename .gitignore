@@ -1,0 +1,18 @@
+# Build / release artifacts
+dist/
+*.zip
+
+# Personal / helper scripts — not for public repo
+LINKEDIN_POST.md
+SETUP_GUIDE.md
+DISTRIBUTION.md
+install.ps1
+setup.ps1
+post-to-linkedin.ps1
+github-release.ps1
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

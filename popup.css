@@ -1,0 +1,147 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  color: #172b4d;
+  background: #fafbfc;
+  width: 380px;
+}
+
+.container {
+  padding: 16px;
+}
+
+h1 {
+  font-size: 15px;
+  margin: 0 0 12px 0;
+  color: #0052cc;
+}
+
+.section {
+  margin-bottom: 12px;
+}
+
+.label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #42526e;
+  font-size: 12px;
+}
+
+.page-info {
+  padding: 8px 10px;
+  background: #f4f5f7;
+  border: 1px solid #dfe1e6;
+  border-radius: 4px;
+  font-size: 12px;
+  word-break: break-word;
+  min-height: 32px;
+}
+
+.page-info.error {
+  background: #ffebe6;
+  border-color: #ff5630;
+  color: #bf2600;
+}
+
+select, input[type="number"] {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #dfe1e6;
+  border-radius: 4px;
+  font-size: 13px;
+  background: white;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.checkbox input {
+  margin: 0;
+}
+
+button.primary {
+  width: 100%;
+  padding: 10px;
+  background: #0052cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+button.primary:hover:not(:disabled) {
+  background: #0747a6;
+}
+
+button.primary:disabled {
+  background: #a5adba;
+  cursor: not-allowed;
+}
+
+.progress {
+  margin-top: 12px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #dfe1e6;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+#progress-fill {
+  height: 100%;
+  background: #0052cc;
+  width: 0%;
+  transition: width 0.2s;
+}
+
+#progress-text {
+  font-size: 11px;
+  color: #6b778c;
+  text-align: right;
+  margin-top: 4px;
+}
+
+.log {
+  margin-top: 12px;
+  max-height: 160px;
+  overflow-y: auto;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 11px;
+  color: #42526e;
+  background: white;
+  border: 1px solid #dfe1e6;
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+
+.log:empty {
+  display: none;
+}
+
+.log div {
+  padding: 1px 0;
+  word-break: break-word;
+}
+
+.log .err {
+  color: #bf2600;
+}
+
+.log .ok {
+  color: #006644;
+}
