@@ -16,7 +16,8 @@
     <div class="section">
       <label for="format" class="label">Format</label>
       <select id="format">
-        <option value="doc">Word (.doc) &mdash; opens in MS Word</option>
+        <option value="md">Markdown (.md) &mdash; recommended for Translation Engine</option>
+        <option value="docx">Word (.docx) &mdash; true Office Open XML</option>
         <option value="html">HTML (.html)</option>
       </select>
     </div>
@@ -51,6 +52,8 @@
   </div>
 
   <script src="lib/jszip.min.js"></script>
+  <script src="lib/html-to-md.js"></script>
+  <script src="lib/html-to-docx.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

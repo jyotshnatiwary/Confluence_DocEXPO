@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Confluence Bulk Exporter",
-  "version": "1.0.0",
-  "description": "Export a Confluence page and all its child pages as a ZIP with folder structure preserved. One .doc or .html file per page.",
+  "version": "1.1.0",
+  "description": "Export a Confluence page and all its child pages as a ZIP with folder structure preserved. Outputs Markdown (.md), true Word (.docx), or HTML per page. Compatible with IBM Transition Engine and other translation tools.",
   "permissions": ["activeTab", "downloads", "scripting"],
   "host_permissions": [
     "https://*.atlassian.net/*"

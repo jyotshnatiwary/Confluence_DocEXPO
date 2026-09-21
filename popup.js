@@ -170,32 +170,7 @@ async function inlineImages(html) {
   });
 }
 
-function wrapDoc(title, html) {
-  return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-<head>
-<meta charset="utf-8">
-<title>${escapeHtml(title)}</title>
-<xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml>
-<style>
-  @page { size: A4; margin: 2cm; }
-  body { font-family: Calibri, sans-serif; font-size: 11pt; color: #172b4d; }
-  h1, h2, h3, h4, h5, h6 { font-family: "Calibri Light", sans-serif; color: #2f5496; }
-  h1 { font-size: 20pt; } h2 { font-size: 16pt; } h3 { font-size: 13pt; }
-  table { border-collapse: collapse; margin: 8pt 0; }
-  th, td { border: 1px solid #999; padding: 4pt 6pt; vertical-align: top; }
-  th { background: #f4f5f7; }
-  code, pre { font-family: Consolas, "Courier New", monospace; background: #f4f5f7; }
-  pre { padding: 8pt; border: 1px solid #dfe1e6; white-space: pre-wrap; }
-  img { max-width: 16cm; }
-  a { color: #0052cc; }
-</style>
-</head>
-<body>
-<h1>${escapeHtml(title)}</h1>
-${html}
-</body>
-</html>`;
-}
+// Old .doc wrapper removed — replaced by true .docx and .md generators in lib/.
 
 function wrapHtml(title, html) {
   return `<!DOCTYPE html>
@@ -222,14 +197,22 @@ ${html}
 </html>`;
 }
 
+const FORMAT_EXT = { md: 'md', docx: 'docx', html: 'html' };
+
+async function renderPage(format, title, html) {
+  if (format === 'md')   return window.CBE_htmlToMarkdown(title, html);
+  if (format === 'docx') return window.CBE_buildDocx(title, html, JSZip);
+  return wrapHtml(title, html);
+}
+
 async function addTreeToZip(zip, node, format, embedImages, path = '') {
   const folderName = safeFilename(node.title);
-  const ext = format === 'doc' ? 'doc' : 'html';
+  const ext = FORMAT_EXT[format] || 'html';
 
   let body = rewriteUrls(node.body);
   if (embedImages) body = await inlineImages(body);
 
-  const content = format === 'doc' ? wrapDoc(node.title, body) : wrapHtml(node.title, body);
+  const content = await renderPage(format, node.title, body);
 
   if (node.children.length > 0) {
     const folderPath = path ? `${path}/${folderName}` : folderName;
