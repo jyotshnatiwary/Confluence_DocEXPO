@@ -117,12 +117,31 @@ async function fetchPageTree(pageId, depth, maxDepth, counter) {
   return node;
 }
 
+const WINDOWS_RESERVED = /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\.|$)/i;
+
 function safeFilename(name) {
-  return String(name)
-    .replace(/[<>:"/\\|?*\x00-\x1f]/g, '_')
+  let s = String(name == null ? '' : name)
+    // Windows-forbidden characters
+    .replace(/[<>:"/\\|?*]/g, '_')
+    // ASCII + Unicode control chars
+    .replace(/[\x00-\x1f\x7f-\x9f]/g, '_')
+    // Zero-width and other invisible troublemakers
+    .replace(new RegExp("[​-‏ -  -⁯﻿]", "g"), "")
+    // Collapse whitespace
     .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 120) || 'untitled';
+    .trim();
+
+  // Strip trailing dots or spaces (Windows silently trims these, causing "unknown file" errors)
+  s = s.replace(/[. ]+$/, '');
+  // Strip leading dots (would create hidden files or trip Chrome's downloads API)
+  s = s.replace(/^\.+/, '');
+  // Length cap (leave headroom for extension + parent path)
+  s = s.slice(0, 120);
+  // Empty result? Give it a placeholder
+  if (!s) s = 'untitled';
+  // Windows reserved names — prefix with underscore
+  if (WINDOWS_RESERVED.test(s)) s = '_' + s;
+  return s;
 }
 
 function escapeHtml(s) {
@@ -209,10 +228,18 @@ async function addTreeToZip(zip, node, format, embedImages, path = '') {
   const folderName = safeFilename(node.title);
   const ext = FORMAT_EXT[format] || 'html';
 
-  let body = rewriteUrls(node.body);
-  if (embedImages) body = await inlineImages(body);
-
-  const content = await renderPage(format, node.title, body);
+  let content;
+  try {
+    let body = rewriteUrls(node.body || '');
+    if (embedImages) body = await inlineImages(body);
+    content = await renderPage(format, node.title, body);
+  } catch (err) {
+    log(`  ! conversion failed for "${node.title}": ${err.message}`, 'err');
+    // Fallback: minimal placeholder so the export still produces something
+    if (format === 'md')      content = `# ${node.title}\n\n_(conversion error: ${err.message})_\n`;
+    else if (format === 'docx') content = `# ${node.title}\n\n(conversion error: ${err.message})`;
+    else                      content = wrapHtml(node.title, `<p><em>Conversion error: ${escapeHtml(err.message)}</em></p>`);
+  }
 
   if (node.children.length > 0) {
     const folderPath = path ? `${path}/${folderName}` : folderName;
@@ -224,6 +251,46 @@ async function addTreeToZip(zip, node, format, embedImages, path = '') {
     const filePath = path ? `${path}/${folderName}.${ext}` : `${folderName}.${ext}`;
     zip.file(filePath, content);
   }
+}
+
+// Save a blob, preferring chrome.downloads (shows save-as dialog).
+// Falls back to an anchor click if the downloads API rejects the request —
+// common in MV3 popup contexts on some Chrome versions.
+async function saveBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const cleanupLater = () => setTimeout(() => URL.revokeObjectURL(url), 30000);
+
+  try {
+    await new Promise((resolve, reject) => {
+      chrome.downloads.download({ url, filename, saveAs: true }, (id) => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+          return;
+        }
+        if (id === undefined) {
+          reject(new Error('Download did not start (no download id)'));
+          return;
+        }
+        resolve(id);
+      });
+    });
+    cleanupLater();
+    return;
+  } catch (err) {
+    log(`  ! chrome.downloads failed ("${err.message}") — trying direct link fallback`, 'err');
+  }
+
+  // Fallback: anchor-click. Won't show a save-as dialog but WILL download to the default folder.
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.rel = 'noopener';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  cleanupLater();
+  log(`  ~ downloaded via fallback to your default Downloads folder`, 'ok');
 }
 
 $('export-btn').addEventListener('click', async () => {
@@ -262,19 +329,18 @@ $('export-btn').addEventListener('click', async () => {
       }
     );
 
-    const url = URL.createObjectURL(blob);
     const filename = `${safeFilename(currentPage.title)}-export.zip`;
-    await new Promise((resolve, reject) => {
-      chrome.downloads.download({ url, filename, saveAs: true }, (id) => {
-        if (chrome.runtime.lastError) reject(new Error(chrome.runtime.lastError.message));
-        else resolve(id);
-      });
-    });
+    log(`Downloading as "${filename}" (${(blob.size / 1024).toFixed(1)} KB)…`);
+    await saveBlob(blob, filename);
 
     log(`Saved: ${filename}`, 'ok');
     btn.textContent = 'Done!';
   } catch (err) {
     log(`ERROR: ${err.message}`, 'err');
+    if (err.stack) {
+      const trace = err.stack.split('\n').slice(0, 4).join('\n');
+      log(trace, 'err');
+    }
     btn.textContent = 'Export failed';
   } finally {
     setTimeout(() => {
